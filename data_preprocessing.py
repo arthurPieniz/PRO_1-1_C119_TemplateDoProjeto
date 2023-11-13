@@ -7,7 +7,7 @@ nltk.download('wordnet')
 from nltk.stem import PorterStemmer
 
 # crie um objeto/instância da classe PorterStemmer()
-
+stemmer = PorterStemmer()
 
 # importando a biblioteca json
 import json
@@ -40,7 +40,9 @@ def get_stem_words(words, ignore_words):
         4) retorne a lista
         ''' 
         # Adicione o código aqui #        
-
+        w = stemmer.stem(word.lower())
+        stem_words.append(w)
+    
     return stem_words
 
 
@@ -68,9 +70,10 @@ def create_bot_corpus(words, classes, pattern_word_tags_list, ignore_words):
             pattern_words = nltk.word_tokenize(pattern)
 
             # adicione as palavras tokenizadas à lista words        
-                          
+            words.extend(pattern_words)                        
+              
             # adicione a 'lista de palavras tokenizadas' junto com a 'tag' à lista pattern_word_tags_list
-            
+            pattern_word_tags_list.append((pattern_words, intent['tag']))
             
         # Adicione todas as tags à lista classes
         if intent['tag'] not in classes:
@@ -80,9 +83,10 @@ def create_bot_corpus(words, classes, pattern_word_tags_list, ignore_words):
     stem_words = get_stem_words(words, ignore_words) 
 
     # Remova palavras duplicadas de stem_words
+    stem_words = sorted(list(set(stem_words)))
 
     # ordene a lista de palavras-tronco e a lista classes
-
+    classes = sorted(list(set(classes)))
     
     # imprima a stem_words
     print('lista de palavras stemizadas: ' , stem_words)
@@ -145,7 +149,8 @@ def preprocess_train_data():
     stem_words, tag_classes, word_tags_list = create_bot_corpus(words, classes, pattern_word_tags_list, ignore_words)
     
     # Converta as palavras-tronco e a lista classes para o formato de arquivo Python pickle
-    
+    pickle.dump(stem_words, open('words.pkl','wb'))
+    pickle.dump(tag_classes, open('classes.pkl','wb'))
 
     train_x = bag_of_words_encoding(stem_words, word_tags_list)
     train_y = class_label_encoding(tag_classes, word_tags_list)
